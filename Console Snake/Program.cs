@@ -28,14 +28,16 @@ namespace Console_Snake
     }
     public class Menu
     {
-        public static List<Tuple<string, string>> ThemeColors()
+        public static List<Tuple<string, string, string, string>> ThemeStuff()
         {
-            var colors = new List<Tuple<string, string>>();
-            colors.Add(new Tuple<string, string>("\x1b[38;2;0;0;0m", "\x1b[48;2;255;255;255m"));
-            colors.Add(new Tuple<string, string>("\x1b[38;2;32;55;0m", "\x1b[48;2;142;222;8m"));
-            colors.Add(new Tuple<string, string>("\x1b[38;2;250;0;0m", "\x1b[48;2;10;0;0m"));
-            colors.Add(new Tuple<string, string>("\x1b[38;2;229;235;7m", "\x1b[48;2;40;45;240m"));
-            colors.Add(new Tuple<string, string>("\x1b[38;2;58;33;3m", "\x1b[48;2;243;240;195m"));
+            //theme color tuples (first string changes the foreground color, second one the background color, third snakes body and the forth fruits) █▓▒
+            var colors = new List<Tuple<string, string, string, string>>();
+                                                                        //R G B values
+            colors.Add(new Tuple<string, string, string, string>("\x1b[38;2;0;0;0m", "\x1b[48;2;255;255;255m", "██", "██"));
+            colors.Add(new Tuple<string, string, string, string>("\x1b[38;2;32;55;0m", "\x1b[48;2;142;222;8m", "▓▓", "▓▓"));
+            colors.Add(new Tuple<string, string, string, string>("\x1b[38;2;250;0;0m", "\x1b[48;2;10;0;0m", "▒▒", "▒▒"));
+            colors.Add(new Tuple<string, string, string, string>("\x1b[38;2;229;235;7m", "\x1b[48;2;40;45;240m", "██", "#♫"));
+            colors.Add(new Tuple<string, string, string, string>("\x1b[38;2;58;33;3m", "\x1b[48;2;243;240;195m", "██", "██"));
             return colors;
         }
         public static int Theme = 0;
@@ -69,13 +71,13 @@ namespace Console_Snake
                     {
                         case ConsoleKey.LeftArrow:
                             Theme = Math.Max(Theme - 1, 0);
-                            Console.WriteLine(ThemeColors()[Theme].Item1 + ThemeColors()[Theme].Item2);
+                            Console.WriteLine(ThemeStuff()[Theme].Item1 + ThemeStuff()[Theme].Item2);
                             Console.Clear();
                             Console.WriteLine(Title.Logo + "\n\n");
                             break;
                         case ConsoleKey.RightArrow:
-                            Theme = Math.Min(Theme + 1, ThemeColors().Count - 1);
-                            Console.WriteLine(ThemeColors()[Theme].Item1 + ThemeColors()[Theme].Item2);
+                            Theme = Math.Min(Theme + 1, ThemeStuff().Count - 1);
+                            Console.WriteLine(ThemeStuff()[Theme].Item1 + ThemeStuff()[Theme].Item2);
                             Console.Clear();
                             Console.WriteLine(Title.Logo + "\n\n");
                             break;
@@ -92,7 +94,7 @@ namespace Console_Snake
             ConsoleKeyInfo key;
             Random rnd = new();
             int direction = 1;
-            var snakeHead = new List<int> { 5, 5 };
+            var snakeHead = new List<int> { 4, 5 };
             var snakeTailX = new List<int> { 4, 3 };
             var snakeTailY = new List<int> { 5, 5 };
             bool escape;
@@ -104,79 +106,18 @@ namespace Console_Snake
             int speed = 160;
             do
             {
+                if (Console.CursorVisible == true)
+                    Console.CursorVisible = false;
+                if (Console.WindowWidth / 2 % 2 != 0)
+                    Console.WindowWidth += 1;
+                //draw hud
                 Console.Write("\x1b[48;2;0;0;0m\x1b[38;2;255;255;255m");
-                if (speed > 20)
+                if (speed > 30)
                     Console.WriteLine($" SCORE: {score}              SPEED: 1px/{speed}ms ");
                 else
                     Console.WriteLine($" SCORE: {score}                  SPEED: MAX ");
-                Console.Write(Menu.ThemeColors()[Menu.Theme].Item1 + Menu.ThemeColors()[Menu.Theme].Item2);
-                if (noFruit)
-                {
-                    do
-                    {
-                        escape = true;
-                        fruitX = rnd.Next(0, 20);
-                        fruitY = rnd.Next(0, 20);
-                        for (int i = 0; i < snakeTailX.Count; i++)
-                        {
-                            if (snakeTailX[i] == fruitX && snakeTailY[i] == fruitY)
-                                escape = false;
-                        }
-                        if (fruitX == snakeHead[0] && fruitY == snakeHead[1])
-                            escape = false;
-                    } while (escape == false);
-                    noFruit = false;
-                }
-                for (int i = 0; i < snakeTailX.Count; i++)
-                {
-                    if ((snakeTailX[i] == snakeHead[0] && snakeTailY[i] == snakeHead[1]) || snakeHead[0] < 0 || snakeHead[0] > 19 || snakeHead[1] < 0 || snakeHead[1] > 19)
-                    {
-                        gameOver = true;
-                        break;
-                    }
-                }
-                StringBuilder gameScreen = new();
-                for (int y = 0; y < 20; y++)
-                {
-                    for (int x = 0; x < 20; x++)
-                    {
-                        string artSymbol;
-                        if ((snakeHead[0] == x && snakeHead[1] == y) || (fruitX == x && fruitY == y))
-                            artSymbol = "██";
-                        else
-                            artSymbol = "  ";
-                        for (int i = 0; i < snakeTailX.Count; i++)
-                        {
-                            if (snakeTailX[i] == x && snakeTailY[i] == y)
-                                artSymbol = "██";
-                        }
-                        gameScreen.Append(artSymbol);
-                    }
-                    if (y < 19)
-                        gameScreen.AppendLine();
-                }
-                Console.Write(gameScreen);
-                if (snakeHead[0] == fruitX && snakeHead[1] == fruitY)
-                {
-                    speed = Math.Max(speed-5, 20);
-                    score++;
-                    noFruit = true;
-                    snakeTailX.Add(0);
-                    snakeTailY.Add(0);
-                }
-                for (int i = snakeTailX.Count - 1; i >= 0; i--)
-                {
-                    if (i == 0)
-                    {
-                        snakeTailX[i] = snakeHead[0];
-                        snakeTailY[i] = snakeHead[1];
-                    }
-                    else
-                    {
-                        snakeTailX[i] = snakeTailX[i - 1];
-                        snakeTailY[i] = snakeTailY[i - 1];
-                    }
-                }
+                Console.Write(Menu.ThemeStuff()[Menu.Theme].Item1 + Menu.ThemeStuff()[Menu.Theme].Item2);
+                //read the input
                 if (Console.KeyAvailable)
                 {
                     key = Console.ReadKey(true);
@@ -189,6 +130,7 @@ namespace Console_Snake
                     else if (key.Key == ConsoleKey.LeftArrow && direction != 1)
                         direction = 3;
                 }
+                //change the direction
                 switch (direction)
                 {
                     case 0:
@@ -204,10 +146,94 @@ namespace Console_Snake
                         snakeHead[0]--;
                         break;
                 }
-                Console.SetCursorPosition(0, Console.CursorTop - 20);
+                //spawn fruit
+                if (noFruit)
+                {
+                    do
+                    {
+                        escape = true;
+                        fruitX = rnd.Next(0, Console.WindowWidth / 2);
+                        fruitY = rnd.Next(0, Console.WindowHeight - 1);
+                        for (int i = 0; i < snakeTailX.Count; i++)
+                        {
+                            if (snakeTailX[i] == fruitX && snakeTailY[i] == fruitY)
+                                escape = false;
+                        }
+                        if (fruitX == snakeHead[0] && fruitY == snakeHead[1])
+                            escape = false;
+                    } while (escape == false);
+                    noFruit = false;
+                }
+                //check game over
+                for (int i = 0; i < snakeTailX.Count; i++)
+                {
+                    if ((snakeTailX[i] == snakeHead[0] && snakeTailY[i] == snakeHead[1]) || snakeHead[0] < 0 || snakeHead[0] > Console.WindowWidth / 2 - 1 || snakeHead[1] < 0 || snakeHead[1] > Console.WindowHeight - 2)
+                    {
+                        gameOver = true;
+                        break;
+                    }
+                }
+                //build game screen
+                StringBuilder gameScreen = new();
+                for (int y = 0; y < Console.WindowHeight - 1; y++)
+                {
+                    for (int x = 0; x < Console.WindowWidth / 2; x++)
+                    {
+                        string artSymbol;
+                        if (snakeHead[0] == x && snakeHead[1] == y)
+                            artSymbol = Menu.ThemeStuff()[Menu.Theme].Item3;
+                        else if (fruitX == x && fruitY == y)
+                            artSymbol = Menu.ThemeStuff()[Menu.Theme].Item4;
+                        else
+                            artSymbol = "  ";
+                        for (int i = 0; i < snakeTailX.Count; i++)
+                        {
+                            if (snakeTailX[i] == x && snakeTailY[i] == y)
+                                artSymbol = Menu.ThemeStuff()[Menu.Theme].Item3;
+                        }
+                        gameScreen.Append(artSymbol);
+                    }
+                    if (y < 19)
+                        gameScreen.AppendLine();
+                }
+                //check if snake ate a fruit
+                if (snakeHead[0] == fruitX && snakeHead[1] == fruitY)
+                {
+                    speed = Math.Max(speed-5, 30);
+                    score++;
+                    noFruit = true;
+                    snakeTailX.Add(0);
+                    snakeTailY.Add(0);
+                }
+                //update the tail
+                for (int i = snakeTailX.Count - 1; i >= 0; i--)
+                {
+                    if (i == 0)
+                    {
+                        snakeTailX[i] = snakeHead[0];
+                        snakeTailY[i] = snakeHead[1];
+                    }
+                    else
+                    {
+                        snakeTailX[i] = snakeTailX[i - 1];
+                        snakeTailY[i] = snakeTailY[i - 1];
+                    }
+                }
+                //update game screen
+                Console.Write(gameScreen);
+                Console.SetCursorPosition(0, Console.CursorTop - (Console.WindowHeight - 1));
                 Task.Delay(speed).Wait();
             } while (gameOver == false);
             Console.WriteLine($"\n               GAME OVER");
+        }
+    }
+    public class SetGame
+    {
+        public static void SetGameRules()
+        {
+            Console.WindowHeight = 21;
+            Console.WindowWidth = 40;
+            Console.CursorVisible = false;
         }
     }
     internal class Program
@@ -215,10 +241,8 @@ namespace Console_Snake
         static void Main(string[] args)
         {
             ConsoleKeyInfo key;
-            Console.WindowHeight = 21;
-            Console.WindowWidth = 40;
-            Console.CursorVisible = false;
-            Console.Write(Menu.ThemeColors()[Menu.Theme].Item1 + Menu.ThemeColors()[Menu.Theme].Item2);
+            SetGame.SetGameRules();
+            Console.Write(Menu.ThemeStuff()[Menu.Theme].Item1 + Menu.ThemeStuff()[Menu.Theme].Item2);
             Console.Clear();
             do
             {
