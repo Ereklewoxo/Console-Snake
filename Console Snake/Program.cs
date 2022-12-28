@@ -39,7 +39,7 @@ namespace Console_Snake
             return colors;
         }
         public static int Theme = 0;
-        public static int MenuTheme()
+        public static void MainMenu()
         {
             ConsoleKeyInfo key;
             int selected = 0;
@@ -83,7 +83,6 @@ namespace Console_Snake
                 }
                 Console.SetCursorPosition(0, Console.CursorTop - 2);
             } while (key.Key != ConsoleKey.Enter);
-            return Theme;
         }
     }
     public class Game
@@ -224,7 +223,7 @@ namespace Console_Snake
             do
             {
                 Console.WriteLine(Title.Logo);
-                Menu.MenuTheme();
+                Menu.MainMenu();
                 Console.Clear();
                 Game.GameLoop();
                 key = Console.ReadKey(true);
